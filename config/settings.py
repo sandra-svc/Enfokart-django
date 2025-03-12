@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+import dj_database_url
+
 import config.db as db
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -84,17 +86,20 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # DATABASES = db.SQLITE
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Corregido: 'ENGINE' en lugar de 'ENGINE'
-        'NAME': 'Enfokarte',                       # Nombre de la base de datos
-        'USER': "admin",                           # Usuario de PostgreSQL
-        'PASSWORD': "admin123",                    # Contraseña del usuario
-        'HOST': 'localhost',                       # Dirección del servidor (o 'localhost' si es local)
-        'PORT': '5432',                            # Puerto de PostgreSQL (por defecto es 5432)
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',  # Corregido: 'ENGINE' en lugar de 'ENGINE'
+#        'NAME': 'Enfokarte',                       # Nombre de la base de datos
+#        'USER': "admin",                           # Usuario de PostgreSQL
+#        'PASSWORD': "admin123",                    # Contraseña del usuario
+#        'HOST': 'localhost',                       # Dirección del servidor (o 'localhost' si es local)
+#        'PORT': '5432',                            # Puerto de PostgreSQL (por defecto es 5432)
+#    }
+#}
 
+DATABASES = {
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
