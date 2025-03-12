@@ -1,0 +1,8 @@
+[phases.setup]
+nixpkgs = ["python312"]
+
+[phases.build]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "gunicorn config.wsgi --bind 0.0.0.0:$PORT"
