@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default="postgresql://postgres:GpDgdNTktvMgZXVYFxExttAhspFQgtxf@mainline.proxy.rlwy.net:48590/enfokarte"
+        default="postgresql://postgres:GpDgdNTktvMgZXVYFxExttAhspFQgtxf@mainline.proxy.rlwy.net:48590/railway"
     )
 }
 
