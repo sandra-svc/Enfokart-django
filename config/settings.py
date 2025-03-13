@@ -98,8 +98,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #}
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'enfokarte',
+        'USER': 'postgres',
+        'PASSWORD': 'GpDgdNTktvMgZXVYFxExttAhspFQgtxf',
+        'HOST': 'postgres.railway.internal',  # <- Esto parece incorrecto
+        'PORT': '5432',
+    }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
