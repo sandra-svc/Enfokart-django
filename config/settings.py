@@ -97,15 +97,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #    }
 #}
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'enfokarte',
-        'USER': 'postgres',
-        'PASSWORD': 'GpDgdNTktvMgZXVYFxExttAhspFQgtxf',
-        'HOST': 'postgres.railway.internal',  # <- Esto parece incorrecto
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default="postgresql://postgres:GpDgdNTktvMgZXVYFxExttAhspFQgtxf@mainline.proxy.rlwy.net:48590/enfokarte"
+    )
 }
 
 # Password validation
