@@ -44,7 +44,7 @@ DATABASES = {
     'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
 
-ROOT_URLCONF = 'erp.urls'
+ROOT_URLCONF = 'config.urls'
 
 
 PORT = os.getenv('PORT', '10000')  # Render detectó el puerto 10000
