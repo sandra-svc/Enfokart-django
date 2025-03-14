@@ -7,7 +7,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(os.getcwd())))
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+PORT = os.getenv("PORT", "10000")
+ALLOWED_HOSTS = ["*"]
 
 
 
@@ -98,8 +99,8 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "core/erp/static")]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 
