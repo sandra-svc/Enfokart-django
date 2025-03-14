@@ -9,6 +9,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
+
+
+
 # Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -96,7 +99,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'hadesmaster', 'app', 'core', 'erp', 'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "core/erp/static")]
+
 
 
 # Media files
