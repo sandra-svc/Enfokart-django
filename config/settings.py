@@ -46,6 +46,11 @@ DATABASES = {
 
 ROOT_URLCONF = 'config.urls'
 
+
+PORT = os.getenv('PORT', '10000')  # Render detectó el puerto 10000
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+
 # Templates
 TEMPLATES = [
     {
