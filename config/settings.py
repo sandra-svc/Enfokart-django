@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(os.getcwd())))
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-PORT = os.getenv("PORT", "10000")
+PORT = os.getenv("PORT", "8000")
 ALLOWED_HOSTS = ["*"]
 
 
