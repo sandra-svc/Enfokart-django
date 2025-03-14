@@ -351,6 +351,7 @@ $(function () {
                             <select name="payment_method_${rowCount}" class="form-control select2">
                                 <option value="EF">Efectivo</option>
                                 <option value="NQ">Nequi</option>
+                                <option value="QR">QR</option>
                             </select>
                         </td>
                         <td>
@@ -460,22 +461,50 @@ $(function () {
         vents.items.payments = payments; // Agregar el array de pagos a vents
         console.log('Payments:', vents.items.payments);
    
-      
+        qz.websocket.connect().then(() => {
+            console.log("Conectado a QZ Tray");
+        }).catch((error) => {
+            console.error("Error al conectar a QZ Tray:", error);
+            alert("No se pudo conectar a QZ Tray. Asegúrate de que esté instalado y en ejecución.");
+        });
+        
+        
         var parameters = new FormData();
         parameters.append(name ='action', $('input[name="action"]').val());
         parameters.append('vents', JSON.stringify(vents.items));
         console.log(parameters); // Imprimir FormData en la consola
-        
+               
         submit_with_ajax(window.location.pathname, 'Notificación',
             '¿Estas seguro de realizar la siguiente acción?', parameters, function (response) {
                 alert_action('Notificación', '¿Desea imprimir la orden de venta?', function () {
-                    window.open('/erp/sale/invoice/pdf/' + response.id + '/', '_blank');
-                    location.href = '/erp/sale/list/';
+                    if (!qz.websocket.isActive()) {
+                        alert("QZ Tray no está conectado. Por favor, inicia QZ Tray e intenta de nuevo.");
+                        return;
+                    }
+        
+                    // Configurar la impresora (reemplaza "Nombre de la impresora" con el nombre real)
+                    const config = qz.configs.create("EPSON TM-T20II Receipt");
+        
+                    // Especificar los datos de impresión (PDF en este caso)
+                    const pdfUrl = '/erp/sale/invoice/pdf/' + response.id + '/';
+                    const data = [{ type: 'pdf', data: pdfUrl }];
+        
+                    // Enviar el trabajo de impresión
+                    qz.print(config, data).then(() => {
+                        console.log("Impresión enviada correctamente");
+                        alert("La factura se ha enviado a la impresora.");
+        
+                        // Redirige al usuario después de imprimir
+                        location.href = '/erp/sale/list/';
+                    }).catch((error) => {
+                        console.error("Error al imprimir:", error);
+                        alert("Ocurrió un error al imprimir la factura.");
+                    });
                 }, function () {
                     location.href = '/erp/sale/list/';
                 });
             });
-    });
+    });    
 
     $('select[name="search"]').select2({
         theme: "bootstrap4",
@@ -520,5 +549,7 @@ $(function () {
 
    
 });
+
+ 
 
  

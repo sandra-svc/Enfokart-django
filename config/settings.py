@@ -2,7 +2,7 @@ import os
 import dj_database_url
 
 # Build paths inside the project
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(os.getcwd())))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
@@ -100,7 +100,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'core', 'erp','static'),  # Si tu carpeta de estáticos está en otro lugar, ajústalo
+]
+
 
 
 
