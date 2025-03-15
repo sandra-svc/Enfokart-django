@@ -6,7 +6,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = True
+
 PORT = os.getenv("PORT", "8000")
 ALLOWED_HOSTS = ["*"]
 
@@ -47,10 +49,12 @@ MIDDLEWARE = [
 
 DATABASES = {
     'default': dj_database_url.config(
-        default="postgresql://enfokarte_user:aMEmeUgzH4tCXGTY09pLqIrEP3Rc4IXe@dpg-cvar30lumphs73ahmm5g-a.oregon-postgres.render.com/enfokarte",
+        default="postgresql://enfokarte_user:aMEmeUgzH4tCXGTY09pLqIrEP3Rc4IXe@dpg-cvar30lumphs73ahmm5g-a.oregon-postgres.render.com:5432/enfokarte",
         conn_max_age=600,
+        ssl_require=True
     )
 }
+
 
 ROOT_URLCONF = 'config.urls'
 
