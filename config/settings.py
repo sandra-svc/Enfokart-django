@@ -47,12 +47,19 @@ MIDDLEWARE = [
 
 # Database
 DATABASES = {
-    'default': dj_database_url.config(
-        default="postgresql://enfokarte_tbgc_user:XhzV5l2QiYujmIbfGGKbjvdIuLMO7FHj@dpg-cv9jldqj1k6c7398u260-a.oregon-postgres.render.com:5432/enfokarte_tbgc?sslmode=require",
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'enfokart',  # Usa el nombre de tu base de datos
+        'USER': 'enfokart_user',  # Usa el nombre de usuario
+        'PASSWORD': 'MxNjNgXOpSHZoyz0q4uYxeiIN36griQM',  # Usa la contraseña proporcionada
+        'HOST': 'dpg-cvb2dflrie7s739b6oq0-a.oregon-postgres.render.com',  # El host de tu base de datos
+        'PORT': '5432',  # Puerto estándar de PostgreSQL
+        'OPTIONS': {
+            'sslmode': 'require',  # Asegúrate de que la conexión sea SSL
+        }
+    }
 }
+
 
 
 
