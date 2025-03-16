@@ -47,9 +47,10 @@ MIDDLEWARE = [
 
 # Database
 
+
 DATABASES = {
     'default': dj_database_url.config(
-        default="postgresql://enfokarte_user:aMEmeUgzH4tCXGTY09pLqIrEP3Rc4IXe@dpg-cvar30lumphs73ahmm5g-a.oregon-postgres.render.com:5432/enfokarte",
+        default="postgresql://enfokarte_tbgc_user:aMEmeUgzH4tCXGTY09pLqIrEP3Rc4IXe@dpg-cvb1f6tumphs73ak6ep0-a.oregon-postgres.render.com:5432/enfokarte_tbgc",
         conn_max_age=600,
         ssl_require=True
     )
