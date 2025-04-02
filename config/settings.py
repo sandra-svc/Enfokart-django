@@ -1,5 +1,7 @@
 import os
 import dj_database_url
+import locale
+
 
 # Build paths inside the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -103,6 +105,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+try:
+    locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')  # Prueba con 'es_ES.UTF-8' si falla
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8')  # Fallback si no está disponible
 
 # Internationalization
 LANGUAGE_CODE = 'es'
