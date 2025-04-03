@@ -387,7 +387,7 @@ class SaleInvoicePdfView(View):
             saldo_pendiente = sale.saldo_pendiente()
 
             # 🔥 CORRECCIÓN: Eliminar `C.UTF-8` y usar directamente `es_CO`
-           saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
+            saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
 
             # ✅ 3. Obtener la plantilla y definir el contexto
             template = get_template('sale/invoice.html')
