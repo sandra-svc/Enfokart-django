@@ -379,37 +379,41 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Configurar localización
-            
-            # Obtener la venta o devolver un error 404 si no existe
+            # ✅ 1. Configurar locale (evitar error en Render)
+            try:
+                locale.setlocale(locale.LC_ALL, "C.UTF-8")  # Usar un locale compatible
+            except locale.Error:
+                locale.setlocale(locale.LC_ALL, "")
+
+            # ✅ 2. Obtener la venta o devolver un error 404 si no existe
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # Calcular valores
-            total_pago = sale.total_pago()  
+            # ✅ 3. Calcular valores
+            total_pago = sale.total_pago()
             saldo_pendiente = sale.saldo_pendiente()
             saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
 
-            # Obtener la plantilla y definir el contexto
+            # ✅ 4. Obtener la plantilla y definir el contexto
             template = get_template('sale/invoice.html')
             context = {
-                'sale': sale,   
+                'sale': sale,
                 'total_pago': total_pago,
                 'saldo_pendiente': saldo_pendiente,
             }
 
-            # Formatear valores de la venta
-            context['sale'].subtotal = locale.format_string("%.2f", sale.subtotal, grouping=True)
-            context['sale'].iva = locale.format_string("%.2f", sale.iva, grouping=True)
-            context['sale'].total = locale.format_string("%.2f", sale.total, grouping=True)
+            # ✅ 5. Formatear valores con Babel en lugar de locale
+            context['sale'].subtotal = format_decimal(sale.subtotal, locale='es_CO')
+            context['sale'].iva = format_decimal(sale.iva, locale='es_CO')
+            context['sale'].total = format_decimal(sale.total, locale='es_CO')
 
-            # Renderizar la plantilla con el contexto
+            # ✅ 6. Renderizar la plantilla con el contexto
             html = template.render(context)
 
-            # Verificar que el CSS existe antes de usarlo
+            # ✅ 7. Verificar que el CSS existe antes de usarlo
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
 
-            # Generar PDF
+            # ✅ 8. Generar el PDF
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
