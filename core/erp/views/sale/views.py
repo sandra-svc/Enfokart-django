@@ -386,22 +386,25 @@ class SaleInvoicePdfView(View):
             total_pago = sale.total_pago()
             saldo_pendiente = sale.saldo_pendiente()
 
-            # 🔥 CORRECCIÓN: Eliminar `C.UTF-8` y usar directamente `es_CO`
-            saldo_pendiente = "${:,.2f}".format(saldo_pendiente).replace(",", "X").replace(".", ",").replace("X", ".")
+            # ✅ 3. Formatear valores correctamente (Reemplazamos format_decimal)
+            def format_currency(value):
+                return "${:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
 
+            saldo_pendiente = format_currency(saldo_pendiente)
+            subtotal = format_currency(sale.subtotal)
+            iva = format_currency(sale.iva)
+            total = format_currency(sale.total)
 
-            # ✅ 3. Obtener la plantilla y definir el contexto
+            # ✅ 4. Obtener la plantilla y definir el contexto
             template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
                 'saldo_pendiente': saldo_pendiente,
+                'subtotal': subtotal,
+                'iva': iva,
+                'total': total,
             }
-
-            # ✅ 4. Formatear valores correctamente
-            context['sale'].subtotal = format_decimal(sale.subtotal, locale='es_CO')
-            context['sale'].iva = format_decimal(sale.iva, locale='es_CO')
-            context['sale'].total = format_decimal(sale.total, locale='es_CO')
 
             # ✅ 5. Renderizar la plantilla con el contexto
             html = template.render(context)
