@@ -1,14 +1,6 @@
 import os
 import dj_database_url
-import locale
 
-os.environ["LANG"] = "es_CO.UTF-8"
-os.environ["LC_ALL"] = "es_CO.UTF-8"
-
-try:
-    locale.setlocale(locale.LC_ALL, "es_CO.UTF-8")
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, "")
 
 # Build paths inside the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
