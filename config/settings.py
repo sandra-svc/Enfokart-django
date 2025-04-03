@@ -2,7 +2,6 @@ import os
 import dj_database_url
 import locale
 
-
 os.environ["LANG"] = "es_CO.UTF-8"
 os.environ["LC_ALL"] = "es_CO.UTF-8"
 
@@ -117,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'es-CO'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'  # Cambia UTC por la zona horaria de Colombia
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
