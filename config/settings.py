@@ -111,7 +111,7 @@ except locale.Error:
     locale.setlocale(locale.LC_ALL, 'C.UTF-8')  # Fallback si no está disponible
 
 # Internationalization
-LANGUAGE_CODE = 'es'
+LANGUAGE_CODE = 'es-CO'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
