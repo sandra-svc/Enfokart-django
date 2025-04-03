@@ -105,10 +105,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LC_ALL"] = "C.UTF-8"
+
 try:
-    locale.setlocale(locale.LC_ALL, 'es_CO.UTF-8')  # Prueba con 'es_ES.UTF-8' si falla
+    locale.setlocale(locale.LC_ALL, "C.UTF-8")
 except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8')  # Fallback si no está disponible
+    locale.setlocale(locale.LC_ALL, "")
 
 # Internationalization
 LANGUAGE_CODE = 'es-CO'
