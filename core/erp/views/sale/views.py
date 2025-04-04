@@ -2,7 +2,6 @@ from argparse import Action
 from audioop import reverse
 from decimal import Decimal
 import json
-import locale
 from babel.numbers import format_currency
 from django.http import HttpResponse, Http404, HttpResponseServerError
 from django.shortcuts import get_object_or_404
@@ -379,20 +378,17 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # ✅ Asegurar que Babel use el locale correcto
-            locale.setlocale(locale.LC_ALL, "es_CO.utf8")
-
-            # ✅ 1. Obtener la venta
+            # ✅ Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # ✅ 2. Calcular valores formateados correctamente
+            # ✅ Formatear los valores con Babel (sin usar locale.setlocale)
             total_pago = format_currency(sale.total_pago(), 'COP', locale='es_CO')
             saldo_pendiente = format_currency(sale.saldo_pendiente(), 'COP', locale='es_CO')
             subtotal = format_currency(sale.subtotal, 'COP', locale='es_CO')
             iva = format_currency(sale.iva, 'COP', locale='es_CO')
             total = format_currency(sale.total, 'COP', locale='es_CO')
 
-            # ✅ 3. Pasar los valores formateados al contexto
+            # ✅ Cargar el template
             template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
@@ -403,7 +399,7 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            # ✅ 4. Generar el PDF
+            # ✅ Generar el PDF desde el HTML renderizado
             html = template.render(context)
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf()
             return HttpResponse(pdf, content_type='application/pdf')
