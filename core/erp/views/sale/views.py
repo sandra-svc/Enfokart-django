@@ -379,42 +379,35 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # ✅ 1. Obtener la venta o devolver un error 404 si no existe
+            # ✅ 1. Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
             # ✅ 2. Calcular valores
             total_pago = sale.total_pago()
             saldo_pendiente = sale.saldo_pendiente()
 
-            # ✅ 3. Formatear valores correctamente (Reemplazamos format_decimal)
-            def format_currency(value):
-                return "${:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
+            # ✅ 3. Formatear los valores como moneda colombiana sin usar locale
+            def formato_pesos(valor):
+                return "${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
 
-            saldo_pendiente = format_currency(saldo_pendiente)
-            subtotal = format_currency(sale.subtotal)
-            iva = format_currency(sale.iva)
-            total = format_currency(sale.total)
-
-            # ✅ 4. Obtener la plantilla y definir el contexto
-            template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
-                'total_pago': total_pago,
-                'saldo_pendiente': saldo_pendiente,
-                'subtotal': subtotal,
-                'iva': iva,
-                'total': total,
+                'total_pago': formato_pesos(total_pago),
+                'saldo_pendiente': formato_pesos(saldo_pendiente),
+                'subtotal': formato_pesos(sale.subtotal),
+                'iva': formato_pesos(sale.iva),
+                'total': formato_pesos(sale.total),
             }
 
-            # ✅ 5. Renderizar la plantilla con el contexto
+            # ✅ 4. Renderizar la plantilla
+            template = get_template('sale/invoice.html')
             html = template.render(context)
 
-            # ✅ 6. Verificar que el CSS existe antes de usarlo
+            # ✅ 5. Generar el PDF
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
-
-            # ✅ 7. Generar el PDF
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
+
             return HttpResponse(pdf, content_type='application/pdf')
 
         except Http404:
