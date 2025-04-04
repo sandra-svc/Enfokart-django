@@ -114,6 +114,11 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+from babel.numbers import format_currency
+
+def format_currency_custom(value):
+    return format_currency(value, 'COP', locale='es_CO')
+
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
