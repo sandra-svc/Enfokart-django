@@ -379,11 +379,14 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
+            # ✅ Obtener la venta o devolver error 404
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # ✅ Formatear valores en pesos colombianos (COP)
-            formato_pesos = lambda valor: format_currency(valor, 'COP', locale='es_CO')
+            # ✅ Función para formatear moneda en pesos colombianos (COP)
+            def formato_pesos(valor):
+                return format_currency(valor, 'COP', locale='es_CO')
 
+            # ✅ Contexto para la plantilla (Todos los valores monetarios están formateados)
             context = {
                 'sale': sale,
                 'total_pago': formato_pesos(sale.total_pago()),
@@ -393,12 +396,15 @@ class SaleInvoicePdfView(View):
                 'total': formato_pesos(sale.total),
             }
 
+            # ✅ Renderizar la plantilla
             template = get_template('sale/invoice.html')
             html = template.render(context)
 
+            # ✅ Verificar que el CSS existe antes de usarlo
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
 
+            # ✅ Generar el PDF
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
