@@ -2,7 +2,6 @@ from argparse import Action
 from audioop import reverse
 from decimal import Decimal
 import json
-from babel.numbers import format_currency
 from django.http import HttpResponse, Http404, HttpResponseServerError
 from django.shortcuts import get_object_or_404
 import os
@@ -375,20 +374,24 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
         context['list_url'] = self.success_url
         return context
 
+def format_cop(value):
+    return f"${value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
             # ✅ Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # ✅ Formatear los valores con Babel (sin usar locale.setlocale)
-            total_pago = format_currency(sale.total_pago(), 'COP', locale='es_CO')
-            saldo_pendiente = format_currency(sale.saldo_pendiente(), 'COP', locale='es_CO')
-            subtotal = format_currency(sale.subtotal, 'COP', locale='es_CO')
-            iva = format_currency(sale.iva, 'COP', locale='es_CO')
-            total = format_currency(sale.total, 'COP', locale='es_CO')
+            # ✅ Usar función personalizada para formatear moneda
+            total_pago = format_cop(sale.total_pago())
+            saldo_pendiente = format_cop(sale.saldo_pendiente())
+            subtotal = format_cop(sale.subtotal)
+            iva = format_cop(sale.iva)
+            total = format_cop(sale.total)
 
-            # ✅ Cargar el template
+            # ✅ Generar el PDF
             template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
@@ -399,7 +402,6 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            # ✅ Generar el PDF desde el HTML renderizado
             html = template.render(context)
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf()
             return HttpResponse(pdf, content_type='application/pdf')
