@@ -1,22 +1,17 @@
 import os
+import locale
+import babel
 import dj_database_url
 
-
-# Build paths inside the project
+# 🏠 Rutas del proyecto
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Security settings
+# 🔐 Seguridad
 SECRET_KEY = os.getenv('SECRET_KEY', 'cambia-esto-por-una-clave-segura')
-# DEBUG = os.getenv('DEBUG', 'False') == 'True'
-DEBUG = True
-
-PORT = os.getenv("PORT", "8000")
+DEBUG = True  # Cambiar a False en producción
 ALLOWED_HOSTS = ["*"]
 
-
-
-
-# Installed apps
+# 📦 Aplicaciones instaladas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'babel',    
+    'babel',
     'widget_tweaks',
     'core.erp',
     'core.homepage',
@@ -34,7 +29,7 @@ INSTALLED_APPS = [
     'core.reports',
 ]
 
-# Middleware
+# 🛡 Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -47,32 +42,46 @@ MIDDLEWARE = [
     'crum.CurrentRequestUserMiddleware',
 ]
 
-# Database
+# 🗄 Base de datos (Render PostgreSQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'enfokart',  # Usa el nombre de tu base de datos
-        'USER': 'enfokart_user',  # Usa el nombre de usuario
-        'PASSWORD': 'MxNjNgXOpSHZoyz0q4uYxeiIN36griQM',  # Usa la contraseña proporcionada
-        'HOST': 'dpg-cvb2dflrie7s739b6oq0-a.oregon-postgres.render.com',  # El host de tu base de datos
-        'PORT': '5432',  # Puerto estándar de PostgreSQL
+        'NAME': 'enfokart',
+        'USER': 'enfokart_user',
+        'PASSWORD': 'MxNjNgXOpSHZoyz0q4uYxeiIN36griQM',
+        'HOST': 'dpg-cvb2dflrie7s739b6oq0-a.oregon-postgres.render.com',
+        'PORT': '5432',
         'OPTIONS': {
-            'sslmode': 'require',  # Asegúrate de que la conexión sea SSL
+            'sslmode': 'require',
         }
     }
 }
 
-
-
-
+# 🔥 Configuración de Django
 ROOT_URLCONF = 'config.urls'
+WSGI_APPLICATION = 'config.wsgi.application'
 
+# 🌍 Configuración de idioma y zona horaria
+LANGUAGE_CODE = 'es_CO'  # ⚠️ IMPORTANTE: Guion bajo (_), no guion (-)
+TIME_ZONE = 'America/Bogota'
+USE_I18N = True
+USE_L10N = False  # ❌ Desactivar porque Django ya maneja localización
+USE_TZ = True
 
-PORT = os.getenv('PORT', '10000')  # Render detectó el puerto 10000
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+# 🔥 Configurar el locale para Render
+try:
+    locale.setlocale(locale.LC_ALL, "es_CO.utf8")
+except locale.Error:
+    print("⚠️ Advertencia: No se pudo establecer 'es_CO.utf8'. Se usará Babel.")
 
+# 🏦 Formato de moneda con Babel (backup si el locale falla)
+def formato_pesos(valor):
+    try:
+        return babel.numbers.format_currency(valor, "COP", locale="es_CO")
+    except:
+        return "${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
 
-# Templates
+# 🎨 Configuración de plantillas
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -89,16 +98,13 @@ TEMPLATES = [
     },
 ]
 
-# WSGI application
-WSGI_APPLICATION = 'config.wsgi.application'
-
-# Authentication
+# 🛡 Seguridad en autenticación
 AUTH_USER_MODEL = 'user.User'
 LOGIN_REDIRECT_URL = '/erp/dashboard/'
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
 
-# Password validation
+# 🔑 Validación de contraseñas
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -106,45 +112,28 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
-LANGUAGE_CODE = 'es-CO'
-TIME_ZONE = 'America/Bogota'  # Cambia UTC por la zona horaria de Colombia
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
-
-from babel.numbers import format_currency
-
-def format_currency_custom(value):
-    return format_currency(value, 'COP', locale='es_CO')
-
-# Static files
+# 🖼 Archivos estáticos y medios
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'core', 'erp','static'),  # Si tu carpeta de estáticos está en otro lugar, ajústalo
+    os.path.join(BASE_DIR, 'core', 'erp', 'static'),
 ]
 
-
-
-
-# Media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-# Email configuration
+# 📧 Configuración de correo
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-# Default primary key field type
+# 🔑 ID primario automático
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Sessions
+# 💾 Configuración de sesiones
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
