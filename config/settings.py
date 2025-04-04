@@ -68,18 +68,14 @@ USE_I18N = True
 USE_L10N = False  # ❌ Desactivar porque Django ya maneja localización
 USE_TZ = True
 
-# 🔥 Configurar el locale para Render
-try:
-    locale.setlocale(locale.LC_ALL, "es_CO.utf8")
-except locale.Error:
-    print("⚠️ Advertencia: No se pudo establecer 'es_CO.utf8'. Se usará Babel.")
-
-# 🏦 Formato de moneda con Babel (backup si el locale falla)
 def formato_pesos(valor):
     try:
         return babel.numbers.format_currency(valor, "COP", locale="es_CO")
-    except:
+    except Exception as e:
+        print(f"⚠️ Advertencia: Babel falló ({e}). Usando formato manual.")
         return "${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+
+print("✅ Formato de moneda configurado con Babel")
 
 # 🎨 Configuración de plantillas
 TEMPLATES = [
