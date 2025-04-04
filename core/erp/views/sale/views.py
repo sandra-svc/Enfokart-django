@@ -379,40 +379,28 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # ✅ 1. Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # ✅ 2. Calcular valores
-            total_pago = sale.total_pago()
-            saldo_pendiente = sale.saldo_pendiente()
-
-            # ✅ 3. Formatear los valores como moneda colombiana sin usar locale
-            def formato_pesos(valor):
-                return "${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+            # ✅ Formatear valores en pesos colombianos (COP)
+            formato_pesos = lambda valor: format_currency(valor, 'COP', locale='es_CO')
 
             context = {
                 'sale': sale,
-                'total_pago': formato_pesos(total_pago),
-                'saldo_pendiente': formato_pesos(saldo_pendiente),
+                'total_pago': formato_pesos(sale.total_pago()),
+                'saldo_pendiente': formato_pesos(sale.saldo_pendiente()),
                 'subtotal': formato_pesos(sale.subtotal),
                 'iva': formato_pesos(sale.iva),
                 'total': formato_pesos(sale.total),
             }
 
-            # ✅ 4. Renderizar la plantilla
             template = get_template('sale/invoice.html')
             html = template.render(context)
 
-            # ✅ 5. Generar el PDF
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
-            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
 
+            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
-        except Http404:
-            return HttpResponse("Factura no encontrada", status=404)
-
         except Exception as e:
-            error_message = f"Error interno del servidor: {str(e)}"
-            return HttpResponseServerError(error_message)
+            return HttpResponseServerError(f"Error interno del servidor: {str(e)}")
