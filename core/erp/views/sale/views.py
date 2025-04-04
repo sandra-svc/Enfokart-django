@@ -375,23 +375,23 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
         return context
 
 def format_cop(value):
-    return f"${value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    try:
+        return f"${value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return "$0,00"
 
 
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # ✅ Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # ✅ Usar función personalizada para formatear moneda
             total_pago = format_cop(sale.total_pago())
             saldo_pendiente = format_cop(sale.saldo_pendiente())
             subtotal = format_cop(sale.subtotal)
             iva = format_cop(sale.iva)
             total = format_cop(sale.total)
 
-            # ✅ Generar el PDF
             template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
