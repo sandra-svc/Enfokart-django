@@ -2,6 +2,8 @@ from argparse import Action
 from audioop import reverse
 from decimal import Decimal
 import json
+import locale
+from babel.numbers import format_currency
 from django.http import HttpResponse, Http404, HttpResponseServerError
 from django.shortcuts import get_object_or_404
 import os
@@ -374,37 +376,46 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
         context['list_url'] = self.success_url
         return context
 
-format_cop(value):
-    try:
-        return f"${value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
-        return "$0,00"
-
-
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
+            locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Configurar localización
+            
+            # Obtener la venta o devolver un error 404 si no existe
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            total_pago = format_cop(sale.total_pago())
-            saldo_pendiente = format_cop(sale.saldo_pendiente())
-            subtotal = format_cop(sale.subtotal)
-            iva = format_cop(sale.iva)
-            total = format_cop(sale.total)
+            # Calcular valores
+            total_pago = sale.total_pago()  
+            saldo_pendiente = sale.saldo_pendiente()
+            saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
 
+            # Obtener la plantilla y definir el contexto
             template = get_template('sale/invoice.html')
             context = {
-                'sale': sale,
+                'sale': sale,   
                 'total_pago': total_pago,
                 'saldo_pendiente': saldo_pendiente,
-                'subtotal': subtotal,
-                'iva': iva,
-                'total': total,
             }
 
+            # Formatear valores de la venta
+            context['sale'].subtotal = locale.format_string("%.2f", sale.subtotal, grouping=True)
+            context['sale'].iva = locale.format_string("%.2f", sale.iva, grouping=True)
+            context['sale'].total = locale.format_string("%.2f", sale.total, grouping=True)
+
+            # Renderizar la plantilla con el contexto
             html = template.render(context)
-            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf()
+
+            # Verificar que el CSS existe antes de usarlo
+            css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
+            stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
+
+            # Generar PDF
+            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
+        except Http404:
+            return HttpResponse("Factura no encontrada", status=404)
+
         except Exception as e:
-            return HttpResponseServerError(f"Error interno del servidor: {str(e)}")
+            error_message = f"Error interno del servidor: {str(e)}"
+            return HttpResponseServerError(error_message)
