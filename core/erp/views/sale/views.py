@@ -403,8 +403,9 @@ class SaleInvoicePdfView(View):
             }
 
             html = template.render(context)
-            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf()
+            # pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf()
             return HttpResponse(pdf, content_type='application/pdf')
 
-        except Exception as e:
-            return HttpResponseServerError(f"Error interno del servidor: {str(e)}")
+    except Exception as e:
+        print("Traceback del error:\n", traceback.format_exc())
+        return HttpResponseServerError(f"Error interno del servidor: {str(e)}")
