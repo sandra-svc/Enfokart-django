@@ -375,7 +375,14 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
         context['entity'] = 'Ventas'
         context['list_url'] = self.success_url
         return context
+        
+    def format_cop(value):
+    try:
+        return f"${value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return "$0,00"
 
+  
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
