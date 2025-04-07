@@ -379,33 +379,42 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Configurar localización
-            
-            # Obtener la venta o devolver un error 404 si no existe
+            # Establecer locale compatible con Render (sin en_US.UTF-8)
+            try:
+                locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
+            except locale.Error:
+                try:
+                    locale.setlocale(locale.LC_ALL, 'C.UTF-8')  # Fallback
+                except locale.Error:
+                    locale.setlocale(locale.LC_ALL, '')  # Último recurso
+
+            # Obtener la venta o error 404
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # Calcular valores
-            total_pago = sale.total_pago()  
-            saldo_pendiente = sale.saldo_pendiente()
-            saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
+            # Cálculos de dinero
+            total_pago = sale.total_pago()
+            saldo_pendiente_val = sale.saldo_pendiente()
 
-            # Obtener la plantilla y definir el contexto
+            # Usamos Babel para formato de moneda con locale 'es_CO'
+            saldo_pendiente = format_currency(saldo_pendiente_val, 'USD', locale='es_CO').replace("US$", "$")
+
+            # Contexto para la plantilla
             template = get_template('sale/invoice.html')
             context = {
-                'sale': sale,   
+                'sale': sale,
                 'total_pago': total_pago,
                 'saldo_pendiente': saldo_pendiente,
             }
 
-            # Formatear valores de la venta
+            # Formatear números usando locale
             context['sale'].subtotal = locale.format_string("%.2f", sale.subtotal, grouping=True)
             context['sale'].iva = locale.format_string("%.2f", sale.iva, grouping=True)
             context['sale'].total = locale.format_string("%.2f", sale.total, grouping=True)
 
-            # Renderizar la plantilla con el contexto
+            # Renderizar HTML
             html = template.render(context)
 
-            # Verificar que el CSS existe antes de usarlo
+            # Agregar estilos si existen
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
 
