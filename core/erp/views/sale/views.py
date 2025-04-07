@@ -382,11 +382,11 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
     except:
         return "$0,00"
 
-  
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')  # Configurar localización
+            # Configuración robusta de locale con fallbacks
+            self.setup_locale()
             
             # Obtener la venta o devolver un error 404 si no existe
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
@@ -404,10 +404,10 @@ class SaleInvoicePdfView(View):
                 'saldo_pendiente': saldo_pendiente,
             }
 
-            # Formatear valores de la venta
-            context['sale'].subtotal = locale.format_string("%.2f", sale.subtotal, grouping=True)
-            context['sale'].iva = locale.format_string("%.2f", sale.iva, grouping=True)
-            context['sale'].total = locale.format_string("%.2f", sale.total, grouping=True)
+            # Formatear valores de la venta con manejo de errores
+            context['sale'].subtotal = self.format_currency_value(sale.subtotal)
+            context['sale'].iva = self.format_currency_value(sale.iva)
+            context['sale'].total = self.format_currency_value(sale.total)
 
             # Renderizar la plantilla con el contexto
             html = template.render(context)
@@ -426,3 +426,38 @@ class SaleInvoicePdfView(View):
         except Exception as e:
             error_message = f"Error interno del servidor: {str(e)}"
             return HttpResponseServerError(error_message)
+    
+    def setup_locale(self):
+        """Configura la locale con múltiples fallbacks"""
+        locales_to_try = [
+            'es_ES.UTF-8',    # Primera opción (ideal)
+            'es_ES.utf8',     # Variación común
+            'es_CO.UTF-8',    # Alternativa colombiana
+            'es_CO.utf8',    # Variación colombiana
+            'es_ES',          # Sin especificar encoding
+            'es_CO',          # Sin encoding colombiano
+            'C.UTF-8',        # Locale básica con UTF-8
+            'en_US.UTF-8',    # Ingles como último recurso
+            'C'               # Locale POSIX mínima
+        ]
+        
+        for loc in locales_to_try:
+            try:
+                locale.setlocale(locale.LC_ALL, loc)
+                return
+            except locale.Error:
+                continue
+        
+        # Si todo falla, usar locale mínima
+        locale.setlocale(locale.LC_ALL, 'C')
+    
+    def format_currency_value(self, value):
+        """Formatea valores monetarios con manejo de errores"""
+        try:
+            return locale.format_string("%.2f", value, grouping=True)
+        except:
+            # Fallback manual si locale.format_string falla
+            try:
+                return format_cop(value)
+            except:
+                return str(value)
