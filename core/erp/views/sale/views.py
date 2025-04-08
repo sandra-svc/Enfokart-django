@@ -380,18 +380,14 @@ class SaleInvoicePdfView(View):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # Calcular pagos
             total_pago = sale.total_pago()
-            saldo_pendiente_valor = sale.saldo_pendiente()
+            saldo_val = sale.saldo_pendiente()
 
-            # Formateo de montos
             subtotal = safe_format_currency(sale.subtotal)
             iva = safe_format_currency(sale.iva)
             total = safe_format_currency(sale.total)
-            saldo_pendiente = safe_format_currency(saldo_pendiente_valor)
+            saldo_pendiente = safe_format_currency(saldo_val)
 
-            # Cargar plantilla
-            template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
@@ -401,21 +397,13 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            # Renderizar HTML
+            template = get_template('sale/invoice.html')
             html = template.render(context)
 
-            # Ruta del CSS si existe
-            css_path = os.path.join(os.path.join(settings.BASE_DIR, 'static'), 'css', 'pdf.css')
-            css = CSS(filename=css_path) if os.path.exists(css_path) else None
+            css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
+            pdf_file = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)] if os.path.exists(css_path) else [])
 
-            # Generar PDF
-            pdf_file = HTML(string=html).write_pdf(stylesheets=[css] if css else [])
-
-            # Devolver PDF
-            response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = f'filename="factura_{sale.id}.pdf"'
-            response.write(pdf_file)
-            return response
+            return HttpResponse(pdf_file, content_type='application/pdf')
 
         except Exception as e:
-            return HttpResponse(f"Error generando PDF:<br>{str(e)}", status=500)
+            return HttpResponse(f"Error generando PDF: {str(e)}", status=500)
