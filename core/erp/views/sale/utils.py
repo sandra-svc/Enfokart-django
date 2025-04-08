@@ -8,13 +8,17 @@ class DecimalEncoder(json.JSONEncoder):
             return str(o)
         return super().default(o)
 
-# Formateo seguro
-def safe_format_currency(value, currency='USD', loc='es_CO'):
-    try:
-        return format_currency(value, currency, locale=loc).replace("US$", "$")
-    except:
-        # Fallback: Formato manual con separador latino
-        val = f"{value:,.2f}"
-        val = val.replace(",", "X").replace(".", ",").replace("X", ".")
-        return f"${val}"
+def safe_format_currency(value, currency='USD'):
+    for loc in ['es_CO', 'es_ES', 'en_US']:
+        try:
+            if not isinstance(value, (Decimal, float, int)):
+                value = Decimal(str(value))
+            return format_currency(value, currency, locale=loc).replace("US$", "$")
+        except:
+            continue
+
+    # Fallback si ningún locale sirve
+    val = f"{value:,.2f}"
+    val = val.replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"${val}"
 
