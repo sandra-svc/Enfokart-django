@@ -378,20 +378,20 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # Obtener la venta
+            # Obtener la venta o devolver error 404
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
             # Calcular valores
             total_pago = sale.total_pago()
-            saldo_pendiente_val = sale.saldo_pendiente()
+            saldo_pendiente = sale.saldo_pendiente()
 
-            # Formateo de moneda usando solo Babel
-            saldo_pendiente = format_currency(saldo_pendiente_val, 'USD', locale='es_CO').replace("US$", "$")
+            # Formatear valores con Babel
             subtotal = format_currency(sale.subtotal, 'USD', locale='es_CO').replace("US$", "$")
             iva = format_currency(sale.iva, 'USD', locale='es_CO').replace("US$", "$")
             total = format_currency(sale.total, 'USD', locale='es_CO').replace("US$", "$")
+            saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
 
-            # Contexto para la plantilla
+            # Obtener plantilla y contexto
             template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
@@ -402,11 +402,14 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            # Renderizar PDF
+            # Renderizar HTML
             html = template.render(context)
+
+            # Cargar estilos si existen
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
 
+            # Generar PDF
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
