@@ -378,21 +378,16 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # Obtener la venta o devolver error 404
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
-
-            # Calcular valores
             total_pago = sale.total_pago()
             saldo_pendiente = sale.saldo_pendiente()
 
-            # Formatear valores con Babel
+            # Formateo seguro
             subtotal = format_currency(sale.subtotal, 'USD', locale='es_CO').replace("US$", "$")
             iva = format_currency(sale.iva, 'USD', locale='es_CO').replace("US$", "$")
             total = format_currency(sale.total, 'USD', locale='es_CO').replace("US$", "$")
             saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
 
-            # Obtener plantilla y contexto
-            template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
@@ -402,20 +397,15 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            # Renderizar HTML
+            template = get_template('sale/invoice.html')
             html = template.render(context)
 
-            # Cargar estilos si existen
-            css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
-            stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
+            css_path = os.path.join(settings.BASE_DIR, 'static/css/pdf.css')  # Ajusta si tu CSS está en otra ruta
 
-            # Generar PDF
-            pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
+            pdf = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)])
+
             return HttpResponse(pdf, content_type='application/pdf')
 
-        except Http404:
-            return HttpResponse("Factura no encontrada", status=404)
-
         except Exception as e:
-            error_message = f"Error interno del servidor: {str(e)}"
-            return HttpResponseServerError(error_message)
+            # MOSTRAR ERROR CLARO EN EL NAVEGADOR (solo para pruebas)
+            return HttpResponseServerError(f"<h1>Error generando PDF</h1><p>{str(e)}</p>")
