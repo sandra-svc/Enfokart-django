@@ -24,7 +24,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, DeleteView, UpdateView, View
 from weasyprint import HTML, CSS
-from .utils import DecimalEncoder
+from core.erp.utils import safe_format_currency
 
 
 
@@ -379,15 +379,19 @@ class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
+
+            # Calcular pagos
             total_pago = sale.total_pago()
-            saldo_pendiente = sale.saldo_pendiente()
+            saldo_pendiente_valor = sale.saldo_pendiente()
 
-            # Formateo seguro
-            subtotal = format_currency(sale.subtotal, 'USD', locale='es_CO').replace("US$", "$")
-            iva = format_currency(sale.iva, 'USD', locale='es_CO').replace("US$", "$")
-            total = format_currency(sale.total, 'USD', locale='es_CO').replace("US$", "$")
-            saldo_pendiente = format_currency(saldo_pendiente, 'USD', locale='es_CO').replace("US$", "$")
+            # Formateo de montos
+            subtotal = safe_format_currency(sale.subtotal)
+            iva = safe_format_currency(sale.iva)
+            total = safe_format_currency(sale.total)
+            saldo_pendiente = safe_format_currency(saldo_pendiente_valor)
 
+            # Cargar plantilla
+            template = get_template('sale/invoice.html')
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
@@ -397,15 +401,21 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            template = get_template('sale/invoice.html')
+            # Renderizar HTML
             html = template.render(context)
 
-            css_path = os.path.join(settings.BASE_DIR, 'static/css/pdf.css')  # Ajusta si tu CSS está en otra ruta
+            # Ruta del CSS si existe
+            css_path = os.path.join(os.path.join(settings.BASE_DIR, 'static'), 'css', 'pdf.css')
+            css = CSS(filename=css_path) if os.path.exists(css_path) else None
 
-            pdf = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)])
+            # Generar PDF
+            pdf_file = HTML(string=html).write_pdf(stylesheets=[css] if css else [])
 
-            return HttpResponse(pdf, content_type='application/pdf')
+            # Devolver PDF
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'filename="factura_{sale.id}.pdf"'
+            response.write(pdf_file)
+            return response
 
         except Exception as e:
-            # MOSTRAR ERROR CLARO EN EL NAVEGADOR (solo para pruebas)
-            return HttpResponseServerError(f"<h1>Error generando PDF</h1><p>{str(e)}</p>")
+            return HttpResponse(f"Error generando PDF:<br>{str(e)}", status=500)
