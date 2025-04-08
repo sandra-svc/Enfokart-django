@@ -379,19 +379,17 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            print("🔍 Buscando venta...")
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            print("💰 Calculando valores...")
-            total_pago = sale.total_pago()
+            total_pago_val = sale.total_pago()
             saldo_val = sale.saldo_pendiente()
 
             subtotal = safe_format_currency(sale.subtotal)
             iva = safe_format_currency(sale.iva)
             total = safe_format_currency(sale.total)
+            total_pago = safe_format_currency(total_pago_val)
             saldo_pendiente = safe_format_currency(saldo_val)
 
-            print("🧩 Generando contexto...")
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
@@ -401,17 +399,14 @@ class SaleInvoicePdfView(View):
                 'total': total,
             }
 
-            print("📄 Cargando template...")
             template = get_template('sale/invoice.html')
             html = template.render(context)
 
-            print("🖨️ Generando PDF...")
             css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
             pdf_file = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)] if os.path.exists(css_path) else [])
 
-            print("✅ PDF generado con éxito.")
             return HttpResponse(pdf_file, content_type='application/pdf')
 
         except Exception as e:
-            print("❌ Error durante la generación del PDF:", e)
             return HttpResponse(f"Error generando PDF: {str(e)}", status=500)
+
