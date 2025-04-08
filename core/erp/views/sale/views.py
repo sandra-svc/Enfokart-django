@@ -2,7 +2,6 @@ from argparse import Action
 from audioop import reverse
 from decimal import Decimal
 import json
-import locale
 from babel.numbers import format_currency
 from django.http import HttpResponse, Http404, HttpResponseServerError
 from django.shortcuts import get_object_or_404
@@ -379,24 +378,18 @@ class SaleDeleteView(LoginRequiredMixin, ValidatePermissionRequiredMixin, Delete
 class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
-            # Establecer locale compatible con Render (sin en_US.UTF-8)
-            try:
-                locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
-            except locale.Error:
-                try:
-                    locale.setlocale(locale.LC_ALL, 'C.UTF-8')  # Fallback
-                except locale.Error:
-                    locale.setlocale(locale.LC_ALL, '')  # Último recurso
-
-            # Obtener la venta o error 404
+            # Obtener la venta
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            # Cálculos de dinero
+            # Calcular valores
             total_pago = sale.total_pago()
             saldo_pendiente_val = sale.saldo_pendiente()
 
-            # Usamos Babel para formato de moneda con locale 'es_CO'
+            # Formateo de moneda usando solo Babel
             saldo_pendiente = format_currency(saldo_pendiente_val, 'USD', locale='es_CO').replace("US$", "$")
+            subtotal = format_currency(sale.subtotal, 'USD', locale='es_CO').replace("US$", "$")
+            iva = format_currency(sale.iva, 'USD', locale='es_CO').replace("US$", "$")
+            total = format_currency(sale.total, 'USD', locale='es_CO').replace("US$", "$")
 
             # Contexto para la plantilla
             template = get_template('sale/invoice.html')
@@ -404,21 +397,16 @@ class SaleInvoicePdfView(View):
                 'sale': sale,
                 'total_pago': total_pago,
                 'saldo_pendiente': saldo_pendiente,
+                'subtotal': subtotal,
+                'iva': iva,
+                'total': total,
             }
 
-            # Formatear números usando locale
-            context['sale'].subtotal = locale.format_string("%.2f", sale.subtotal, grouping=True)
-            context['sale'].iva = locale.format_string("%.2f", sale.iva, grouping=True)
-            context['sale'].total = locale.format_string("%.2f", sale.total, grouping=True)
-
-            # Renderizar HTML
+            # Renderizar PDF
             html = template.render(context)
-
-            # Agregar estilos si existen
             css_path = os.path.join(settings.BASE_DIR, 'static/lib/bootstrap-4.4.1-dist/css/bootstrap.min.css')
             stylesheets = [CSS(css_path)] if os.path.exists(css_path) else []
 
-            # Generar PDF
             pdf = HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(stylesheets=stylesheets)
             return HttpResponse(pdf, content_type='application/pdf')
 
