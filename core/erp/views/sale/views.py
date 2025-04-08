@@ -24,7 +24,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView, DeleteView, UpdateView, View
 from weasyprint import HTML, CSS
-from core.erp.utils import safe_format_currency
+from .utils import safe_format_currency
+
 
 
 
