@@ -380,12 +380,13 @@ class SaleInvoicePdfView(View):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
 
-            total_pago = sale.total_pago()
+            total_pago_val = sale.total_pago()
             saldo_val = sale.saldo_pendiente()
 
             subtotal = safe_format_currency(sale.subtotal)
             iva = safe_format_currency(sale.iva)
             total = safe_format_currency(sale.total)
+            total_pago = safe_format_currency(total_pago_val)
             saldo_pendiente = safe_format_currency(saldo_val)
 
             context = {
@@ -407,3 +408,4 @@ class SaleInvoicePdfView(View):
 
         except Exception as e:
             return HttpResponse(f"Error generando PDF: {str(e)}", status=500)
+
