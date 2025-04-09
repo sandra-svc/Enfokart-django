@@ -67,14 +67,10 @@ USE_I18N = True
 USE_L10N = False  # ❌ Desactivar porque Django ya maneja localización
 USE_TZ = True
 
-def formato_pesos(valor):
-    try:
-        return babel.numbers.format_currency(valor, "COP", locale="es_CO")
-    except Exception as e:
-        print(f"⚠️ Advertencia: Babel falló ({e}). Usando formato manual.")
-        return "${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
-
-print("✅ Formato de moneda configurado con Babel")
+# Configuración de formato numérico
+DECIMAL_SEPARATOR = ','
+THOUSAND_SEPARATOR = '.'
+NUMBER_GROUPING = 3
 
 # 🎨 Configuración de plantillas
 TEMPLATES = [
