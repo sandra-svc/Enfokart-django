@@ -111,25 +111,56 @@ class Sale(models.Model):
     def __str__(self):
         return self.cli.names
 
+    def format_currency(self, value):
+        """
+        Formatea valores monetarios sin depender del locale
+        Formato colombiano: $1.000.000,00
+        """
+        try:
+            value = float(value)
+            # Manejar valores negativos
+            sign = '-' if value < 0 else ''
+            value = abs(value)
+            
+            # Separar parte entera y decimal
+            int_part = int(value)
+            decimal_part = int(round((value - int_part) * 100))
+            
+            # Formatear parte entera con puntos
+            int_str = f"{int_part:,}".replace(",", ".")
+            
+            # Formatear parte decimal con coma
+            decimal_str = f"{decimal_part:02d}"
+            
+            return f"{sign}${int_str},{decimal_str}"
+        except (ValueError, TypeError):
+            return f"${value}"
+
     def saldo_pendiente(self):
         total_pagos = self.payment_set.aggregate(total_pagos=Sum('amount'))['total_pagos'] or 0
-        saldo = self.total - total_pagos
-        print("Saldo pendiente:", saldo)
+        saldo = float(self.total) - float(total_pagos)
         return saldo
+    
+    def saldo_pendiente_formatted(self):
+        return self.format_currency(self.saldo_pendiente())
     
     def total_pago(self):
         total_pago = self.payment_set.aggregate(total_pagos=models.Sum('amount'))['total_pagos'] or 0
-        return locale.currency(total_pago, grouping=True, symbol=False)
+        return float(total_pago)
+    
+    def total_pago_formatted(self):
+        return self.format_currency(self.total_pago())
 
     def toJSON(self):
         item = model_to_dict(self)
         item['cli'] = self.cli.toJSON()
-        item['subtotal'] = format(self.subtotal, '.2f')
-        item['iva'] = format(self.iva, '.2f')
-        item['total'] = format(self.total, '.2f')
+        item['subtotal'] = format(float(self.subtotal), '.2f')
+        item['iva'] = format(float(self.iva), '.2f')
+        item['total'] = format(float(self.total), '.2f')
         item['date_joined'] = self.date_joined.strftime('%Y-%m-%d')
         item['date_end'] = self.date_end.strftime('%Y-%m-%d')
-        item['total'] =format(self.total, '.2f')
+        item['total_pago'] = self.total_pago()
+        item['saldo_pendiente'] = self.saldo_pendiente()
         item['det'] = [i.toJSON() for i in self.detsale_set.all()]
         return item
 
