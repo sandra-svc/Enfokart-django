@@ -404,9 +404,7 @@ class SaleInvoicePdfView(View):
             html = template.render(context)
 
             css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
-            pdf_file = HTML(string=html).write_pdf()
-
-            # pdf_file = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)] if os.path.exists(css_path) else [])
+            pdf_file = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)] if os.path.exists(css_path) else [])
 
             return HttpResponse(pdf_file, content_type='application/pdf')
 
