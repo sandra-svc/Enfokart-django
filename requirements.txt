@@ -3,6 +3,7 @@ arabic-reshaper==3.0.0
 argcomplete==3.5.3
 asgiref==3.7.2
 asn1crypto==1.5.1
+Babel==2.15.0
 Brotli==1.1.0
 certifi==2023.11.17
 cffi==1.16.0
@@ -74,3 +75,4 @@ wheel==0.42.0
 whitenoise==6.9.0
 xhtml2pdf==0.2.15
 zopfli==0.2.3
+
