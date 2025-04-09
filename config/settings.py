@@ -1,6 +1,5 @@
 import os
 import locale
-import babel
 import dj_database_url
 
 # 🏠 Rutas del proyecto
