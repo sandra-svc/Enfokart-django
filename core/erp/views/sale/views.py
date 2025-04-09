@@ -380,34 +380,34 @@ class SaleInvoicePdfView(View):
     def get(self, request, *args, **kwargs):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
-
-            total_pago_val = sale.total_pago()
-            saldo_val = sale.saldo_pendiente()
-
-            subtotal = safe_format_currency(sale.subtotal)
-            iva = safe_format_currency(sale.iva)
-            total = safe_format_currency(sale.total)
-            total_pago = safe_format_currency(total_pago_val)
-            saldo_pendiente = safe_format_currency(saldo_val)
-
-
+            
+            # Función de formateo mejorada
+            def format_currency(value):
+                try:
+                    value = float(value)
+                    # Formato colombiano: $1.000.000,00
+                    return "${:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
+                except (ValueError, TypeError):
+                    return f"${value}"
+            
             context = {
                 'sale': sale,
-                'total_pago': total_pago,
-                'saldo_pendiente': saldo_pendiente,
-                'subtotal': subtotal,
-                'iva': iva,
-                'total': total,
+                'total_pago': format_currency(sale.total_pago()),
+                'saldo_pendiente': format_currency(sale.saldo_pendiente()),
+                'subtotal': format_currency(sale.subtotal),
+                'iva': format_currency(sale.iva),
+                'total': format_currency(sale.total),
             }
 
             template = get_template('sale/invoice.html')
             html = template.render(context)
 
             css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
-            pdf_file = HTML(string=html).write_pdf(stylesheets=[CSS(css_path)] if os.path.exists(css_path) else [])
+            pdf_file = HTML(string=html).write_pdf(
+                stylesheets=[CSS(css_path)] if os.path.exists(css_path) else []
+            )
 
             return HttpResponse(pdf_file, content_type='application/pdf')
 
         except Exception as e:
             return HttpResponse(f"Error generando PDF: {str(e)}", status=500)
-
