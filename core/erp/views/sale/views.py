@@ -390,6 +390,7 @@ class SaleInvoicePdfView(View):
             total_pago = safe_format_currency(total_pago_val)
             saldo_pendiente = safe_format_currency(saldo_val)
 
+
             context = {
                 'sale': sale,
                 'total_pago': total_pago,
