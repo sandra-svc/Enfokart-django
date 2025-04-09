@@ -381,33 +381,32 @@ class SaleInvoicePdfView(View):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
             
-            # Función de formateo mejorada
-            def format_currency(value):
-                try:
-                    value = float(value)
-                    # Formato colombiano: $1.000.000,00
-                    return "${:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
-                except (ValueError, TypeError):
-                    return f"${value}"
+            # Debug: Verificar valores antes de formatear
+            print(f"Valores numéricos - subtotal: {sale.subtotal}, iva: {sale.iva}, total: {sale.total}")
             
             context = {
                 'sale': sale,
-                'total_pago': format_currency(sale.total_pago()),
-                'saldo_pendiente': format_currency(sale.saldo_pendiente()),
-                'subtotal': format_currency(sale.subtotal),
-                'iva': format_currency(sale.iva),
-                'total': format_currency(sale.total),
+                'total_pago': safe_format_currency(sale.total_pago()),
+                'saldo_pendiente': safe_format_currency(sale.saldo_pendiente()),
+                'subtotal': safe_format_currency(sale.subtotal),
+                'iva': safe_format_currency(sale.iva),
+                'total': safe_format_currency(sale.total),
             }
+            
+            # Debug: Verificar valores formateados
+            print("Valores formateados:", context)
 
             template = get_template('sale/invoice.html')
             html = template.render(context)
-
-            css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
-            pdf_file = HTML(string=html).write_pdf(
-                stylesheets=[CSS(css_path)] if os.path.exists(css_path) else []
-            )
-
-            return HttpResponse(pdf_file, content_type='application/pdf')
+            
+            # Asegúrate que WeasyPrint no dependa de locale
+            pdf_file = HTML(string=html).write_pdf()
+            
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="factura_{sale.id}.pdf"'
+            return response
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return HttpResponse(f"Error generando PDF: {str(e)}", status=500)
