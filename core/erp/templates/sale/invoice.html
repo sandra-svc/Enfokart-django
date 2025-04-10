@@ -3,27 +3,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Orden #{{ sale.id }}</title>
+    <title>Factura #{{ sale.id }}</title>
     <style>
-        /* Estilos generales */
+        /* Reset y estilos base */
         * {
-            color: black;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            color: #000;
+            font-family: "Arial Narrow", Arial, sans-serif;
+            line-height: 1.2;
         }
 
         body {
-            font-family: "Arial Narrow", Arial, sans-serif;
-            font-size: 10px;
             width: 85mm;
             margin: 0 auto;
-            color: black;
+            padding: 2mm;
+            font-size: 10px;
         }
 
         .page-container {
             width: 100%;
-            padding: 0 2mm;
         }
 
         /* Estilos para la tabla */
@@ -36,47 +36,34 @@
 
         th, td {
             padding: 2px 1px;
-            overflow: visible;
-            white-space: nowrap;
             vertical-align: top;
         }
 
-        /* Anchos específicos de columnas */
+        /* Columnas específicas */
         .col-cant {
             width: 12%;
+            text-align: center;
         }
 
         .col-item {
             width: 43%;
-            white-space: normal !important;  /* Permite múltiples líneas */
-            word-wrap: break-word;          /* Rompe palabras muy largas */
-            overflow-wrap: break-word;      /* Alternativa moderna */
-            hyphens: auto;                  /* Agrega guiones cuando sea necesario */
-            padding: 2px 1px 5px 1px;      /* Más espacio inferior */
-        }
-             
-    }
-    }
+            word-wrap: break-word;
+            -weasy-wrap: break-word;
+            white-space: normal;
+            padding: 1px 2px;
+            font-size: 9px;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .col-price {
             width: 20%;
+            text-align: right;
         }
 
         .col-subtotal {
             width: 25%;
-        }
-
-        /* Alineaciones */
-        .text-center {
-            text-align: center;
-        }
-
-        .text-left {
-            text-align: left;
-        }
-
-        .text-right {
             text-align: right;
         }
 
@@ -84,6 +71,8 @@
         th {
             background-color: #f2f2f2;
             font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
         }
 
         /* Estilos para impresión */
@@ -92,40 +81,27 @@
             margin: 0;
         }
 
-        @media print {
-            body {
-                width: 85mm;
-            }
-            
-            .no-print {
-                display: none;
-            }
-        }
-
-        /* Texto pequeño */
-        .text-small {
-            font-size: 8px;
-            line-height: 1.2;
-        }
-
-        /* Separadores */
+        /* Elementos especiales */
         .separator {
             border-top: 1px dashed #ccc;
             margin: 3px 0;
         }
 
-        /* Texto importante */
-        .text-important {
-            font-weight: bold;
+        .text-small {
+            font-size: 8px;
+        }
+
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
 <body>
 <div class="page-container">
     <!-- Encabezado de la factura -->
-    <div style="margin-bottom: 5px;">
-        <h3 style="text-align: center; margin-bottom: 3px;">FACTURA #{{ sale.id }}</h3>
-        <div style="margin-left: 2px;">
+    <div style="margin-bottom: 5px; text-align: center;">
+        <h3 style="margin-bottom: 3px;">ORDEN #{{ sale.id }}</h3>
+        <div style="text-align: left; margin-left: 2px;">
             <p><strong>Fecha:</strong> {{ sale.date_joined|date:'Y-m-d' }}</p>
             <p><strong>Cliente:</strong> {{ sale.cli.get_full_name }}</p>
             <p><strong>Documento:</strong> {{ sale.cli.dni }}</p>
@@ -138,19 +114,19 @@
     <table>
         <thead>
             <tr>
-                <th class="text-center col-cant">Cant</th>
-                <th class="text-left col-item">Descripción</th>
-                <th class="text-right col-price">P.Unit</th>
-                <th class="text-right col-subtotal">Subtotal</th>
+                <th class="col-cant">Cant</th>
+                <th class="col-item">Descripción</th>
+                <th class="col-price">P.Unit</th>
+                <th class="col-subtotal">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             {% for det in sale.detsale_set.all %}
             <tr>
-                <td class="text-center">{{ det.cant }}</td>
-                <td class="text-left">{{ det.prod.name }}</td>
-                <td class="text-right">${{ det.price|floatformat:2 }}</td>
-                <td class="text-right">${{ det.subtotal|floatformat:2 }}</td>
+                <td class="col-cant">{{ det.cant }}</td>
+                <td class="col-item">{{ det.prod.name }}</td>
+                <td class="col-price">${{ det.price|floatformat:2 }}</td>
+                <td class="col-subtotal">${{ det.subtotal|floatformat:2 }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -185,12 +161,12 @@
     <div class="separator"></div>
 
     <!-- Notas y condiciones -->
-    <div style="margin-top: 5px;">
-        <p class="text-small text-center">
+    <div style="margin-top: 5px; text-align: center;">
+        <p class="text-small">
             Después de 30 días no se responderá por trabajos<br>
             y se liquidarán a precios actuales
         </p>
-        <p class="text-small text-center" style="margin-top: 3px;">
+        <p class="text-small" style="margin-top: 3px;">
             Gracias por su preferencia
         </p>
     </div>
