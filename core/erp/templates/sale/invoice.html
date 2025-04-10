@@ -48,6 +48,15 @@
 
         .col-item {
             width: 43%;
+            white-space: normal !important;  /* Permite múltiples líneas */
+            word-wrap: break-word;          /* Rompe palabras muy largas */
+            overflow-wrap: break-word;      /* Alternativa moderna */
+            hyphens: auto;                  /* Agrega guiones cuando sea necesario */
+            padding: 2px 1px 5px 1px;      /* Más espacio inferior */
+        }
+             
+    }
+    }
         }
 
         .col-price {
