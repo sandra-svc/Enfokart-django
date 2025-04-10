@@ -381,26 +381,30 @@ class SaleInvoicePdfView(View):
         try:
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
             
-            # Debug: Verificar valores antes de formatear
-            print(f"Valores numéricos - subtotal: {sale.subtotal}, iva: {sale.iva}, total: {sale.total}, total_pago :{sale.total_pago()}, saldo_pendiente: {sale.saldo_pendiente} ")
-            
+            # Contexto con valores numéricos directos
             context = {
                 'sale': sale,
-                'total_pago': safe_format_currency(sale.total_pago()),
-                'saldo_pendiente': safe_format_currency(sale.saldo_pendiente()),
-                'subtotal': safe_format_currency(sale.subtotal),
-                'iva': safe_format_currency(sale.iva),
-                'total': safe_format_currency(sale.total),
+                'total_pago': float(sale.total_pago()),
+                'saldo_pendiente': float(sale.saldo_pendiente()),
+                'subtotal': float(sale.subtotal),
+                'iva': float(sale.iva),
+                'total': float(sale.total),
             }
             
-            # Debug: Verificar valores formateados
-            print("Valores formateados:", context)
+            # Debug final
+            print("Contexto enviado a template:", context)
 
             template = get_template('sale/invoice.html')
             html = template.render(context)
             
-            # Asegúrate que WeasyPrint no dependa de locale
-            pdf_file = HTML(string=html).write_pdf()
+            # Generación del PDF
+            css_path = os.path.join(settings.BASE_DIR, 'static', 'css', 'pdf.css')
+            pdf_file = HTML(
+                string=html,
+                base_url=request.build_absolute_uri()
+            ).write_pdf(
+                stylesheets=[CSS(css_path)] if os.path.exists(css_path) else None
+            )
             
             response = HttpResponse(pdf_file, content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="factura_{sale.id}.pdf"'
