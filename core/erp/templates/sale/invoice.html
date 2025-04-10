@@ -5,24 +5,24 @@
     <meta charset="UTF-8">
     <title>Factura #{{ sale.id }}</title>
     <style>
-        /* Reset completo para impresión térmica */
+        /* Reset optimizado para impresión térmica */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             color: #000;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Narrow', Arial, sans-serif;
             line-height: 1.1;
-            font-size: 9px; /* Tamaño reducido */
+            font-size: 9px;
         }
 
         body {
-            width: 80mm; /* Ancho exacto del rollo */
+            width: 78mm; /* 2mm menos para margen */
             margin: 0 auto;
-            padding: 1mm;
+            padding: 0 1mm; /* Márgenes laterales */
         }
 
-        /* Optimización de tablas */
+        /* Ajustes de tabla con márgenes seguros */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -31,54 +31,71 @@
         }
 
         th, td {
-            padding: 1px 0.5px;
+            padding: 1px 0.3mm; /* Reducción de padding horizontal */
             vertical-align: top;
+            overflow: hidden;
         }
 
-        /* Ajustes específicos de columnas */
-        .col-cant { width: 10%; text-align: center; }
+        /* Distribución de columnas con márgenes de seguridad */
+        .col-cant { 
+            width: 12%; 
+            text-align: center;
+            padding-left: 0.5mm;
+            padding-right: 0.5mm;
+        }
         .col-item { 
-            width: 48%; 
+            width: 46%;
             word-wrap: break-word;
             white-space: normal;
-            font-size: 8px; /* Más pequeño para descripciones */
+            font-size: 8px;
             line-height: 1.2;
-            padding-right: 1mm;
+            padding-left: 0.5mm;
+            padding-right: 0.5mm;
         }
-        .col-price { width: 18%; text-align: right; }
-        .col-subtotal { width: 24%; text-align: right; }
-
-        /* Estilos para totales */
-        .total-row td {
-            padding-top: 1px;
-            border-top: 1px dashed #ccc;
+        .col-price { 
+            width: 20%; 
+            text-align: right;
+            padding-left: 0.5mm;
+            padding-right: 0.5mm;
+        }
+        .col-subtotal { 
+            width: 22%; 
+            text-align: right;
+            padding-left: 0.5mm;
+            padding-right: 0.5mm;
         }
 
-        /* Optimización para impresión térmica */
+        /* Estilos para impresión */
         @page {
             size: 80mm 100mm;
             margin: 0;
         }
 
-        /* Texto pequeño para notas */
-        .text-small {
+        /* Textos importantes */
+        .text-important {
+            font-weight: bold;
+        }
+        
+        /* Notas al pie */
+        .footer-notes {
             font-size: 7px;
             line-height: 1.1;
+            padding: 0 1mm; /* Márgenes para notas */
         }
     </style>
 </head>
 <body>
 <div class="page-container">
-    <!-- Encabezado compacto -->
-    <div style="text-align: center; margin-bottom: 2px;">
+    <!-- Encabezado con márgenes seguros -->
+    <div style="text-align: center; margin-bottom: 2px; padding: 0 1mm;">
         <h3 style="font-size: 10px; margin-bottom: 1px;">FACTURA #{{ sale.id }}</h3>
         <div style="text-align: left;">
             <p><strong>Fecha:</strong> {{ sale.date_joined|date:'d/m/y' }}</p>
-            <p><strong>Cliente:</strong> {{ sale.cli.get_full_name|truncatechars:20 }}</p>
+            <p><strong>Cliente:</strong> {{ sale.cli.get_full_name|truncatechars:22 }}</p>
         </div>
     </div>
 
-    <!-- Tabla de productos ajustada -->
+    <!-- Tabla principal con márgenes internos -->
     <table>
         <thead>
             <tr>
@@ -100,36 +117,34 @@
         </tbody>
     </table>
 
-    <!-- Totales compactos -->
-    <table>
-        <tr class="total-row">
-            <td class="col-item text-right"><strong>Subtotal:</strong></td>
+    <!-- Totales con alineación correcta y márgenes -->
+    <table style="margin-top: 3px;">
+        <tr>
+            <td class="col-item text-right" style="padding-right: 1mm;"><strong>Subtotal:</strong></td>
             <td class="col-subtotal">${{ sale.subtotal|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="col-item text-right"><strong>IVA:</strong></td>
+            <td class="col-item text-right" style="padding-right: 1mm;"><strong>IVA:</strong></td>
             <td class="col-subtotal">${{ sale.iva|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="col-item text-right"><strong>Total:</strong></td>
+            <td class="col-item text-right" style="padding-right: 1mm;"><strong>Total:</strong></td>
             <td class="col-subtotal">${{ sale.total|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="col-item text-right"><strong>Pagado:</strong></td>
+            <td class="col-item text-right" style="padding-right: 1mm;"><strong>Pagado:</strong></td>
             <td class="col-subtotal">${{ total_pago|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="col-item text-right"><strong>Saldo:</strong></td>
+            <td class="col-item text-right" style="padding-right: 1mm;"><strong>Saldo:</strong></td>
             <td class="col-subtotal">${{ saldo_pendiente|floatformat:2 }}</td>
         </tr>
     </table>
 
-    <!-- Notas ajustadas -->
-    <div style="margin-top: 3px; text-align: center;">
-        <p class="text-small">
-            Después de 30 días no se responderá por trabajos<br>
-            y se liquidarán a precios actuales
-        </p>
+    <!-- Notas al pie con márgenes -->
+    <div class="footer-notes" style="margin-top: 3px; text-align: center;">
+        <p>Después de 30 días no se responderá por trabajos</p>
+        <p>y se liquidarán a precios actuales</p>
     </div>
 </div>
 </body>
