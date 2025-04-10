@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Factura #{{ sale.id }}</title>
+    <title>Orden #{{ sale.id }}</title>
     <style>
         /* Reset y estilos base */
         * {
@@ -75,6 +75,12 @@
             white-space: nowrap;
         }
 
+        /* Estilos para totales - ALINEACIÓN DERECHA */
+        .total-label {
+            text-align: right !important;
+            padding-right: 5px !important;
+        }
+
         /* Estilos para impresión */
         @page {
             size: 85mm 200mm;
@@ -134,27 +140,27 @@
 
     <div class="separator"></div>
 
-    <!-- Totales -->
+    <!-- Totales - CON ETIQUETAS ALINEADAS A LA DERECHA -->
     <table>
         <tr>
-            <td class="text-left" colspan="2"><strong>Subtotal:</strong></td>
-            <td class="text-right" colspan="2">${{ sale.subtotal|floatformat:2 }}</td>
+            <td class="total-label" colspan="2"><strong>Subtotal:</strong></td>
+            <td class="col-subtotal">${{ sale.subtotal|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="text-left" colspan="2"><strong>IVA:</strong></td>
-            <td class="text-right" colspan="2">${{ sale.iva|floatformat:2 }}</td>
+            <td class="total-label" colspan="2"><strong>IVA:</strong></td>
+            <td class="col-subtotal">${{ sale.iva|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="text-left" colspan="2"><strong>Total a pagar:</strong></td>
-            <td class="text-right" colspan="2">${{ sale.total|floatformat:2 }}</td>
+            <td class="total-label" colspan="2"><strong>Total a pagar:</strong></td>
+            <td class="col-subtotal">${{ sale.total|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="text-left" colspan="2"><strong>Total pagado:</strong></td>
-            <td class="text-right" colspan="2">${{ total_pago|floatformat:2 }}</td>
+            <td class="total-label" colspan="2"><strong>Total pagado:</strong></td>
+            <td class="col-subtotal">${{ total_pago|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td class="text-left" colspan="2"><strong>Saldo pendiente:</strong></td>
-            <td class="text-right" colspan="2">${{ saldo_pendiente|floatformat:2 }}</td>
+            <td class="total-label" colspan="2"><strong>Saldo pendiente:</strong></td>
+            <td class="col-subtotal">${{ saldo_pendiente|floatformat:2 }}</td>
         </tr>
     </table>
 
