@@ -382,7 +382,7 @@ class SaleInvoicePdfView(View):
             sale = get_object_or_404(Sale, pk=self.kwargs['pk'])
             
             # Debug: Verificar valores antes de formatear
-            print(f"Valores numéricos - subtotal: {sale.subtotal}, iva: {sale.iva}, total: {sale.total}")
+            print(f"Valores numéricos - subtotal: {sale.subtotal}, iva: {sale.iva}, total: {sale.total}, total_pago :{sale.total_pago()}, saldo_pendiente: {sale.saldo_pendiente} ")
             
             context = {
                 'sale': sale,
